@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="elasticsearch.debugDataHolder" class="Elasticsearch\Debug\DebugDataHolder"></service>
+
+        <service id="elasticsearch.connection" class="Elasticsearch\Debug\Connection" public="false">
+            <argument type="service" id="elasticsearch.debugDataHolder"></argument>
+            <argument type="service" id="elasticsearch.connection_factory"></argument>
+            <argument>%elasticsearch.indexPrefix%</argument>
+        </service>
+
+        <service id="elasticsearch.twig.elasticsearch_extension" class="Elasticsearch\Bundle\Twig\ElasticsearchTwigExtension" public="false">
+            <tag name="twig.extension" />
+        </service>
+
+    </services>
+
+</container>
