@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <parameters>
+        <parameter key="elasticsearch.client_builder.class">Elastic\Elasticsearch\ClientBuilder</parameter>
+        <parameter key="elasticsearch.client.class">Elasticsearch\Connection\Connection</parameter>
+    </parameters>
+
+    <services>
+        <service id="elasticsearch.esClientBuilder" class="%elasticsearch.client_builder.class%"></service>
+
+        <service id="elasticsearch.connection_factory" class="%elasticsearch.client_builder.class%">
+            <factory service="elasticsearch.esClientBuilder" method="create"/>
+            <call method="setHosts">
+                <argument>%elasticsearch.hosts%</argument>
+            </call>
+        </service>
+
+        <service id="elasticsearch.connection" class="%elasticsearch.client.class%" public="false">
+            <argument type="service" id="elasticsearch.connection_factory"></argument>
+            <argument>%elasticsearch.indexPrefix%</argument>
+        </service>
+
+        <service id="elasticsearch.mappingMetadataFactory" class="Elasticsearch\Mapping\MappingMetadataFactory" public="false">
+            <argument type="service" id="elasticsearch.esDriver"></argument>
+            <argument>%elasticsearch.mappings%</argument>
+        </service>
+
+        <service id="elasticsearch.mappingMetadataProvider" class="Elasticsearch\Mapping\MappingMetadataProvider" public="false">
+            <argument type="service" id="elasticsearch.mappingMetadataFactory"></argument>
+        </service>
+
+        <service id="Elasticsearch\Mapping\MappingMetadataProvider" alias="elasticsearch.mappingMetadataProvider" public="false" />
+        <service id="Elasticsearch\Connection\Connection" alias="elasticsearch.connection" public="false" />
+
+        <service id="elasticsearch.searchBuilderFactory" class="Elasticsearch\Search\SearchBuilderFactory" public="false">
+            <argument type="service" id="elasticsearch.mappingMetadataProvider"></argument>
+            <argument>%elasticsearch.indexPrefix%</argument>
+        </service>
+
+        <service id="Elasticsearch\Search\SearchBuilderFactory" alias="elasticsearch.searchBuilderFactory" public="false" />
+
+    </services>
+
+</container>

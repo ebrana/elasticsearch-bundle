@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="elasticsearch.data_collector.request" class="Elasticsearch\Bundle\Collector\QueryCollector" public="false">
+            <argument type="service" id="elasticsearch.debugDataHolder" />
+            <argument type="service" id="elasticsearch.mappingMetadataProvider" />
+            <argument>%elasticsearch.kibana%</argument>
+            <tag
+                name="data_collector"
+                template="@Elasticsearch/DataCollector/request.html.twig"
+                id="elasticsearch.data_collector.request"
+                priority="334"
+            />
+            <!-- Priority 334 → Just after the "Request / Response" tab -->
+        </service>
+    </services>
+</container>

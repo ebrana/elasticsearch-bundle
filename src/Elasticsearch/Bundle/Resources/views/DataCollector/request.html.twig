@@ -1,0 +1,317 @@
+{% extends request.isXmlHttpRequest ? '@WebProfiler/Profiler/ajax_layout.html.twig' : '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% import _self as helper %}
+
+{% block menu %}
+    {# This left-hand menu appears when using the full-screen profiler. #}
+    <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
+        <span class="icon">
+            {{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}
+        </span>
+        <strong>Elasticsearch</strong>
+        {% if collector.invalidEntityCount %}
+            <span class="count">
+                <span>{{ collector.invalidEntityCount }}</span>
+            </span>
+        {% endif %}
+    </span>
+{% endblock %}
+
+{% block toolbar %}
+    {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
+        {% set icon %}
+            {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
+
+            {% if profiler_markup_version >= 3 %}
+                {{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}
+            {% else %}
+                <span class="icon">{{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}</span>
+            {% endif %}
+
+            {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
+                <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
+                <span class="sf-toolbar-label">errors</span>
+            {% else %}
+                <span class="sf-toolbar-value">{{ collector.querycount }}</span>
+                <span class="sf-toolbar-info-piece-additional-detail">
+                    <span class="sf-toolbar-label">in</span>
+                    <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
+                    <span class="sf-toolbar-label">ms</span>
+                </span>
+            {% endif %}
+        {% endset %}
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>Elasticsearch Queries</b>
+                <span class="sf-toolbar-status {{ collector.querycount > 50 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.querycount }}</span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Query time</b>
+                <span>{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Invalid entities</b>
+                <span class="sf-toolbar-status {{ collector.invalidEntityCount > 0 ? 'sf-toolbar-status-red' : '' }}">{{ collector.invalidEntityCount }}</span>
+            </div>
+        {% endset %}
+
+        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url, status: status|default('') }) }}
+    {% endif %}
+{% endblock %}
+
+{% block panel %}
+    {{ block('queries') }}
+{% endblock %}
+
+{% block queries %}
+    <style>
+        .time-container {
+            position: relative;
+        }
+
+        .time-container .nowrap {
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 2px #fff;
+        }
+
+        .time-bar {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            background: #e0e0e0;
+        }
+
+        .sql-runnable.sf-toggle-content.sf-toggle-visible {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sql-runnable button {
+            align-self: end;
+        }
+
+        {% if profiler_markup_version >= 3 %}
+        .highlight .keyword {
+            color: var(--highlight-keyword);
+            font-weight: bold;
+        }
+
+        .highlight .word {
+            color: var(--color-text);
+        }
+
+        .highlight .variable {
+            color: var(--highlight-variable);
+        }
+
+        .highlight .symbol {
+            color: var(--color-text);
+        }
+
+        .highlight .comment {
+            color: var(--highlight-comment);
+        }
+
+        .highlight .string {
+            color: var(--highlight-string);
+        }
+
+        .highlight .number {
+            color: var(--highlight-constant);
+            font-weight: bold;
+        }
+
+        .highlight .error {
+            color: var(--highlight-error);
+        }
+
+        {% endif %}
+    </style>
+
+    <h2>Elasticsearch Query Metrics</h2>
+
+    <div class="metrics">
+        <div class="metric-group">
+            <div class="metric">
+                <span class="value">{{ collector.querycount }}</span>
+                <span class="label">Queries</span>
+            </div>
+            <div class="metric">
+                <span class="value">{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+                <span class="label">Query time</span>
+            </div>
+            <div class="metric">
+                <span class="value">{{ collector.invalidEntityCount }}</span>
+                <span class="label">Invalid entities</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sf-tabs" style="margin-top: 20px;">
+        <div class="tab {{ collector.queries is empty ? 'disabled' }}">
+            <h3 class="tab-title">Queries</h3>
+
+            <div class="tab-content">
+                {% if not collector.queries %}
+                    <div class="empty">
+                        <p>No executed queries.</p>
+                    </div>
+                {% else %}
+                    <table class="alt queries-table">
+                        <thead>
+                        <tr>
+                            <th class="nowrap" onclick="javascript:sortTable(this, 0, 'queries-1')" data-sort-direction="-1"
+                                style="cursor: pointer;">#<span class="text-muted">&#9650;</span></th>
+                            <th class="nowrap" onclick="javascript:sortTable(this, 1, 'queries-1')" style="cursor: pointer;">
+                                Time<span></span></th>
+                            <th style="width: 90%;">Info</th>
+                            <th style="width: 10%;">Kibana</th>
+                        </tr>
+                        </thead>
+                        <tbody id="queries-1">
+                        {% for query in collector.queries %}
+                            <tr id="queryNo-{{ loop.index }}">
+                                <td class="nowrap">{{ loop.index }}</td>
+                                <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
+                                <td>
+                                    {{ query.query|doctrine_prettify_sql }}
+                                    {% if query.body is not null %}
+                                        <span>{{ query.body }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ collector.kibana }}/app/kibana#/dev_tools/console?load_from=data:text/plain,{{ query|elasticsearch_kibana_query }}"
+                                       target="_blank">console</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab {{ collector.connection is empty ? 'disabled' }}">
+            <h3 class="tab-title">Elasticsearch Connections</h3>
+            <div class="tab-content">
+                {% if not collector.connection %}
+                    <div class="empty">
+                        <p>There are no configured Elasticsearch connection.</p>
+                    </div>
+                {% else %}
+                    {{ helper.render_simple_table('Name', 'Service', collector.connection) }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="tab {{ not collector.entities ? 'disabled' }}">
+            <h3 class="tab-title">Entities Mapping</h3>
+            <div class="tab-content">
+
+                {% if not collector.entities %}
+                    <div class="empty">
+                        <p>No mapped entities.</p>
+                    </div>
+                {% else %}
+                    {% for type, classes in collector.entities %}
+                        {% if classes is empty and type != 'invalid' %}
+                            <div class="empty">
+                                <p>No loaded entities.</p>
+                            </div>
+                        {% elseif classes|length > 0 %}
+                            <table>
+                                <thead>
+                                <tr>
+                                    <th scope="col">Class</th>
+                                    <th scope="col">Mapping errors</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for class, body in classes %}
+                                    {% set contains_errors = type == 'invalid' %}
+                                    <tr class="{{ contains_errors ? 'status-error' }}">
+                                        <td>
+                                            <a href="{{ body.file|file_link(body.line) }}">{{ class }}</a>
+                                            {% if type != 'invalid' %}
+                                                <br>
+                                                {{ body.body }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="font-normal">
+                                            {% if contains_errors %}
+                                                {{ body.message }}
+                                            {% else %}
+                                                No errors.
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+
+    <script type="text/javascript">//<![CDATA[
+        function sortTable(header, column, targetId) {
+            "use strict";
+
+            var direction = parseInt(header.getAttribute('data-sort-direction')) || 1,
+                items = [],
+                target = document.getElementById(targetId),
+                rows = target.children,
+                headers = header.parentElement.children,
+                i;
+
+            for (i = 0; i < rows.length; ++i) {
+                items.push(rows[i]);
+            }
+
+            for (i = 0; i < headers.length; ++i) {
+                headers[i].removeAttribute('data-sort-direction');
+                if (headers[i].children.length > 0) {
+                    headers[i].children[0].innerHTML = '';
+                }
+            }
+
+            header.setAttribute('data-sort-direction', (-1 * direction).toString());
+            header.children[0].innerHTML = direction > 0 ? '<span class="text-muted">&#9650;</span>' : '<span class="text-muted">&#9660;</span>';
+
+            items.sort(function (a, b) {
+                return direction * (parseFloat(a.children[column].innerHTML) - parseFloat(b.children[column].innerHTML));
+            });
+
+            for (i = 0; i < items.length; ++i) {
+                target.appendChild(items[i]);
+            }
+        }
+
+        // ]]></script>
+
+{% endblock %}
+
+{% macro render_simple_table(label1, label2, data) %}
+    <table>
+        <thead>
+        <tr>
+            <th scope="col" class="key">{{ label1 }}</th>
+            <th scope="col">{{ label2 }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for key, value in data %}
+            <tr>
+                <th scope="row">{{ key }}</th>
+                <td>{{ value }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}
