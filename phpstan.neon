@@ -1,0 +1,8 @@
+parameters:
+    level: max
+    checkGenericClassInNonGenericObjectType: false
+    paths:
+        - src
+    excludePaths:
+        - 'src/tests/*'
+        - 'examples/*'
