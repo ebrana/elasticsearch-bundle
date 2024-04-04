@@ -9,7 +9,7 @@
     },
     "require": {
         "php": ">=8.3.0",
-        "ebrana/elasticsearch": "@dev",
+        "ebrana/elasticsearch": "dev-main",
         "ext-json": "*"
     },
     "require-dev": {
