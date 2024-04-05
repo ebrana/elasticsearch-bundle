@@ -238,6 +238,14 @@
                                             {% if type != 'invalid' %}
                                                 <br>
                                                 {{ body.body }}
+                                                <div class="text-small font-normal">
+                                                    &nbsp;
+                                                    <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ loop.parent.loop.index }}" data-toggle-alt-content="Hide pretty query">View pretty query</a>
+                                                </div>
+                                                <div id="original-query-{{ loop.parent.loop.index }}" class="sql-runnable hidden">
+                                                    <pre>{{ body.body|elasticsearch_pretty_query }}</pre>
+                                                    <button class="btn btn-sm hidden" data-clipboard-text="{{ body.body|e('html_attr') }}">Copy</button>
+                                                </div>
                                             {% endif %}
                                         </td>
                                         <td class="font-normal">

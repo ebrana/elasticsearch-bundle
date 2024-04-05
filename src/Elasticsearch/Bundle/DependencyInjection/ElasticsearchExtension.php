@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Bundle\DependencyInjection;
 
+use Elasticsearch\Indexing\Builders\DefaultDocumentBuilderFactory;
 use Elasticsearch\Mapping\Drivers\AnnotationDriver;
 use Elasticsearch\Mapping\Drivers\JsonDriver;
 use Override;
 use RuntimeException;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
-use Symfony\Component\DependencyInjection\TypedReference;
-use Symfony\Component\DependencyInjection\Variable;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class ElasticsearchExtension extends Extension
@@ -67,6 +67,13 @@ class ElasticsearchExtension extends Extension
             $loader->load('data_collector.xml');
             $loader->load('debug.xml');
         }
+
+        $defaultDocumentBuilder = new Definition(DefaultDocumentBuilderFactory::class, []);
+        $container->getDefinition('elasticsearch.documentFactory')->addMethodCall('addBuilderFactory', [$defaultDocumentBuilder]);
+
+        if ($this->hasConsole()) {
+            $loader->load('console.xml');
+        }
     }
 
     /**
@@ -76,5 +83,10 @@ class ElasticsearchExtension extends Extension
     public function getConfiguration(array $config, ContainerBuilder $container): Configuration
     {
         return new Configuration((bool)$container->getParameter('kernel.debug'));
+    }
+
+    protected function hasConsole(): bool
+    {
+        return class_exists(Application::class);
     }
 }

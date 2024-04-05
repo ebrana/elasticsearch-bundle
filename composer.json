@@ -10,6 +10,7 @@
     "require": {
         "php": ">=8.3.0",
         "ebrana/elasticsearch": "dev-main",
+	"netom/lz-string-php": "~v1.3",
         "ext-json": "*"
     },
     "require-dev": {

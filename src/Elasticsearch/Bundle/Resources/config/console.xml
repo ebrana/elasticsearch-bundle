@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="console.command.elasticsearch_create_index" class="Elasticsearch\Bundle\Command\CreateIndexCommand" public="false">
+            <argument type="service" id="elasticsearch.connection"/>
+            <argument type="service" id="elasticsearch.mappingMetadataProvider"/>
+            <argument type="service" id="elasticsearch.metadataRequestFactory"/>
+            <tag name="console.command"/>
+        </service>
+    </services>
+</container>

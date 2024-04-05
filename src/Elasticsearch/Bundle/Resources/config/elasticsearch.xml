@@ -10,7 +10,7 @@
     </parameters>
 
     <services>
-        <service id="elasticsearch.esClientBuilder" class="%elasticsearch.client_builder.class%"></service>
+        <service id="elasticsearch.esClientBuilder" class="%elasticsearch.client_builder.class%" />
 
         <service id="elasticsearch.connection_factory" class="%elasticsearch.client_builder.class%">
             <factory service="elasticsearch.esClientBuilder" method="create"/>
@@ -20,28 +20,38 @@
         </service>
 
         <service id="elasticsearch.connection" class="%elasticsearch.client.class%" public="false">
-            <argument type="service" id="elasticsearch.connection_factory"></argument>
+            <argument type="service" id="elasticsearch.connection_factory" />
             <argument>%elasticsearch.indexPrefix%</argument>
         </service>
 
         <service id="elasticsearch.mappingMetadataFactory" class="Elasticsearch\Mapping\MappingMetadataFactory" public="false">
-            <argument type="service" id="elasticsearch.esDriver"></argument>
+            <argument type="service" id="elasticsearch.esDriver" />
             <argument>%elasticsearch.mappings%</argument>
         </service>
 
         <service id="elasticsearch.mappingMetadataProvider" class="Elasticsearch\Mapping\MappingMetadataProvider" public="false">
-            <argument type="service" id="elasticsearch.mappingMetadataFactory"></argument>
+            <argument type="service" id="elasticsearch.mappingMetadataFactory" />
         </service>
 
         <service id="Elasticsearch\Mapping\MappingMetadataProvider" alias="elasticsearch.mappingMetadataProvider" public="false" />
         <service id="Elasticsearch\Connection\Connection" alias="elasticsearch.connection" public="false" />
 
+        <service id="elasticsearch.metadataRequestFactory" class="Elasticsearch\Mapping\Request\MetadataRequestFactory" public="false" />
+        <service id="Elasticsearch\Mapping\Request\MetadataRequestFactory" alias="elasticsearch.metadataRequestFactory" public="false" />
+
         <service id="elasticsearch.searchBuilderFactory" class="Elasticsearch\Search\SearchBuilderFactory" public="false">
-            <argument type="service" id="elasticsearch.mappingMetadataProvider"></argument>
+            <argument type="service" id="elasticsearch.mappingMetadataProvider" />
             <argument>%elasticsearch.indexPrefix%</argument>
         </service>
 
         <service id="Elasticsearch\Search\SearchBuilderFactory" alias="elasticsearch.searchBuilderFactory" public="false" />
+
+        <service id="elasticsearch.documentFactory" class="Elasticsearch\Indexing\DocumentFactory" public="false">
+            <argument type="service" id="elasticsearch.mappingMetadataProvider" />
+            <argument>%elasticsearch.indexPrefix%</argument>
+        </service>
+
+        <service id="Elasticsearch\Indexing\DocumentFactory" alias="elasticsearch.documentFactory" public="false" />
 
     </services>
 

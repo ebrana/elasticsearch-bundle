@@ -20,6 +20,7 @@ class ElasticsearchTwigExtension extends AbstractExtension
     {
         return [
             new TwigFilter('elasticsearch_kibana_query', [$this, 'kibanaQuery'], ['is_safe' => ['html'], 'deprecated' => false]),
+            new TwigFilter('elasticsearch_pretty_query', [$this, 'prettyPrintJson'], ['is_safe' => ['html'], 'deprecated' => false]),
         ];
     }
 
@@ -37,5 +38,10 @@ class ElasticsearchTwigExtension extends AbstractExtension
         }
 
         return LZString::compressToBase64($query['query'] . PHP_EOL . $body);
+    }
+
+    public function prettyPrintJson(string $jsonString)
+    {
+        return print_r(json_encode(json_decode($jsonString, false, 512, JSON_THROW_ON_ERROR), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT), true);
     }
 }
