@@ -177,7 +177,7 @@
                                 <td class="nowrap">{{ loop.index }}</td>
                                 <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
                                 <td>
-                                    {{ query.query|doctrine_prettify_sql }}
+                                    {{ query.query }}
                                     {% if query.body is not null %}
                                         <span>{{ query.body }}</span>
                                         <div class="text-small font-normal">
