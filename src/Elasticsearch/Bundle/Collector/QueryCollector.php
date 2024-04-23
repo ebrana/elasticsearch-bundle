@@ -18,6 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 class QueryCollector extends AbstractDataCollector
 {
     private ?int $invalidEntityCount = null;
+    private array $data = [];
 
     public function __construct(
         private readonly DebugDataHolder $debugDataHolder,
