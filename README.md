@@ -21,3 +21,6 @@ elasticsearch:
     hosts:
         - '%env(resolve:ELASTICSEARCH_URL)%'
 ````
+
+#### Profiler
+![screen.png](screen.png)
