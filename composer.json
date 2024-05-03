@@ -11,6 +11,7 @@
         "php": ">=8.3.0",
         "ebrana/elasticsearch": "dev-main",
 	    "netom/lz-string-php": "~v1.3",
+        "symfony/framework-bundle": "^7.0",
         "ext-json": "*"
     },
     "require-dev": {
