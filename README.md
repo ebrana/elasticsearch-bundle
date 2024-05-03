@@ -12,7 +12,7 @@ composer require ebrana/elasticsearch-bundle
 elasticsearch:
     profiling: true
     indexPrefix: "katalog_"
-    # tato sekce může být vynechána, protže attributes je default driver
+    # tato sekce může být vynechána, protože attributes je default driver
     #    driver:
     #        type: "attributes" # attributes nebo json
     #        keyResolver: Elasticsearch\Bundle\KeyResolver # resolvuje klíče typu nested nebo object
