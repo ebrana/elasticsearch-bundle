@@ -128,8 +128,8 @@ class ElasticsearchExtension extends Extension
             $connectionFactory->addMethodCall('setAsyncHttpClient', [new Reference(ltrim($config['connection']['asyncHttpClient'], '@'))]);
         }
 
-        if (isset($config['connection']['setNodePool'])) {
-            $connectionFactory->addMethodCall('setNodePool', [new Reference(ltrim($config['connection']['setNodePool'], '@'))]);
+        if (isset($config['connection']['nodePool'])) {
+            $connectionFactory->addMethodCall('setNodePool', [new Reference(ltrim($config['connection']['nodePool'], '@'))]);
         }
 
         if (isset($config['connection']['httpClientOptions'])) {
@@ -155,15 +155,23 @@ class ElasticsearchExtension extends Extension
                 if (null === $cert) {
                     throw new \Symfony\Component\DependencyInjection\Exception\RuntimeException('Please set ssl cert".');
                 }
-                $connectionFactory->addMethodCall('setSSLCert', [$cert, $password]);
+                if (null !== $password) {
+                    $connectionFactory->addMethodCall('setSSLCert', [$cert, $password]);
+                } else {
+                    $connectionFactory->addMethodCall('setSSLCert', [$cert]);
+                }
             }
             if (isset($config['connection']['ssl']['sslKey'])) {
-                $key = $config['connection']['ssl']['sslKey']['cert'];
+                $key = $config['connection']['ssl']['sslKey']['key'];
                 $password = $config['connection']['ssl']['sslKey']['password'] ?? null;
                 if (null === $key) {
                     throw new \Symfony\Component\DependencyInjection\Exception\RuntimeException('Please set ssl key".');
                 }
-                $connectionFactory->addMethodCall('setSSLKey', [$key, $password]);
+                if (null !== $password) {
+                    $connectionFactory->addMethodCall('setSSLKey', [$key, $password]);
+                } else {
+                    $connectionFactory->addMethodCall('setSSLKey', [$key]);
+                }
             }
         }
 

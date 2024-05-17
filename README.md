@@ -33,8 +33,9 @@ elasticsearch:
         httpClientOptions: ... # podle http clienta
         api:
             apiKey: ""
-            ide: ""
+            id: ""
         ssl:
+            sslVerification: true/false
             sslCA: ""
             sslCert:
                 cert: ""
