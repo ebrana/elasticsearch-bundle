@@ -34,14 +34,14 @@ class ElasticsearchExtension extends Extension
 
     /**
      * @param \Symfony\Component\DependencyInjection\ContainerBuilder     $container
-     * @param string[]                                                    $config
+     * @param array<array>                                                $config
      * @param \Symfony\Component\DependencyInjection\Loader\XmlFileLoader $loader
      * @throws \Exception
+     * @phpstan-ignore-next-line
      */
     private function registerDataCollectorConfiguration(ContainerBuilder $container, array $config, XmlFileLoader $loader): void
     {
         $container->setParameter('elasticsearch.indexPrefix', $config['indexPrefix']);
-        $container->setParameter('elasticsearch.hosts', $config['hosts']);
         $container->setParameter('elasticsearch.mappings', $config['mappings']);
         $container->setParameter('elasticsearch.kibana', $config['kibana']);
 
@@ -63,10 +63,7 @@ class ElasticsearchExtension extends Extension
 
         $loader->load('elasticsearch.xml');
 
-        if (isset($config['profiling']) && $config['profiling'] && $container->hasParameter('kernel.debug') && $container->getParameter('kernel.debug')) {
-            $loader->load('data_collector.xml');
-            $loader->load('debug.xml');
-        }
+        $this->configureConnection($container, $config, $loader);
 
         $defaultDocumentBuilder = new Definition(DefaultDocumentBuilderFactory::class, []);
         $container->getDefinition('elasticsearch.documentFactory')->addMethodCall('addBuilderFactory', [$defaultDocumentBuilder]);
@@ -88,5 +85,91 @@ class ElasticsearchExtension extends Extension
     protected function hasConsole(): bool
     {
         return class_exists(Application::class);
+    }
+
+    /**
+     * @param array<array> $config
+     * @phpstan-ignore-next-line
+     * @throws \Exception
+     */
+    private function configureConnection(ContainerBuilder $container, array $config, XmlFileLoader $loader): void
+    {
+        $connectionFactory = $container->getDefinition('elasticsearch.connection_factory');
+
+        $container->setParameter('elasticsearch.hosts', $config['connection']['hosts']);
+
+        if (isset($config['connection']['password']) || isset($config['connection']['username'])) {
+            $username = $config['connection']['username'] ?? '';
+            $password = $config['connection']['password'] ?? '';
+            $connectionFactory->addMethodCall('setBasicAuthentication', [$username, $password]);
+        }
+
+        if (isset($config['connection']['cloudId'])) {
+            $connectionFactory->addMethodCall('setElasticCloudId', [$config['connection']['cloudId']]);
+        }
+
+        if (isset($config['connection']['retries'])) {
+            $connectionFactory->addMethodCall('setRetries', [$config['connection']['retries']]);
+        }
+
+        if (isset($config['connection']['elasticMetaHeader'])) {
+            $connectionFactory->addMethodCall('setElasticMetaHeader', [$config['connection']['elasticMetaHeader']]);
+        }
+
+        if (isset($config['connection']['logger'])) {
+            $connectionFactory->addMethodCall('setLogger', [new Reference(ltrim($config['connection']['logger'], '@'))]);
+        }
+
+        if (isset($config['connection']['httpClient'])) {
+            $connectionFactory->addMethodCall('setHttpClient', [new Reference(ltrim($config['connection']['httpClient'], '@'))]);
+        }
+
+        if (isset($config['connection']['asyncHttpClient'])) {
+            $connectionFactory->addMethodCall('setAsyncHttpClient', [new Reference(ltrim($config['connection']['asyncHttpClient'], '@'))]);
+        }
+
+        if (isset($config['connection']['setNodePool'])) {
+            $connectionFactory->addMethodCall('setNodePool', [new Reference(ltrim($config['connection']['setNodePool'], '@'))]);
+        }
+
+        if (isset($config['connection']['httpClientOptions'])) {
+            $connectionFactory->addMethodCall('setHttpClientOptions', [$config['connection']['httpClientOptions']]);
+        }
+
+        if (isset($config['connection']['api'])) {
+            $id = $config['connection']['api']['id'] ?? null;
+            $apiKey = $config['connection']['api']['apiKey'] ?? null;
+            if (null === $apiKey) {
+                throw new \Symfony\Component\DependencyInjection\Exception\RuntimeException('Please set apiKey".');
+            }
+            $connectionFactory->addMethodCall('setApiKey', [$apiKey, $id]);
+        }
+
+        if (isset($config['connection']['ssl'])) {
+            if (isset($config['connection']['ssl']['sslCA'])) {
+                $connectionFactory->addMethodCall('setCABundle', [$config['connection']['ssl']['sslCA']]);
+            }
+            if (isset($config['connection']['ssl']['sslCert'])) {
+                $cert = $config['connection']['ssl']['sslCert']['cert'];
+                $password = $config['connection']['ssl']['sslCert']['password'] ?? null;
+                if (null === $cert) {
+                    throw new \Symfony\Component\DependencyInjection\Exception\RuntimeException('Please set ssl cert".');
+                }
+                $connectionFactory->addMethodCall('setSSLCert', [$cert, $password]);
+            }
+            if (isset($config['connection']['ssl']['sslKey'])) {
+                $key = $config['connection']['ssl']['sslKey']['cert'];
+                $password = $config['connection']['ssl']['sslKey']['password'] ?? null;
+                if (null === $key) {
+                    throw new \Symfony\Component\DependencyInjection\Exception\RuntimeException('Please set ssl key".');
+                }
+                $connectionFactory->addMethodCall('setSSLKey', [$key, $password]);
+            }
+        }
+
+        if (isset($config['profiling']) && $config['profiling'] && $container->hasParameter('kernel.debug') && $container->getParameter('kernel.debug')) {
+            $loader->load('data_collector.xml');
+            $loader->load('debug.xml');
+        }
     }
 }
