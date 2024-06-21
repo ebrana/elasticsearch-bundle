@@ -11,5 +11,14 @@
             <argument type="service" id="elasticsearch.metadataRequestFactory"/>
             <tag name="console.command"/>
         </service>
+        <service id="console.command.elasticsearch_delete_index" class="Elasticsearch\Bundle\Command\DeleteIndexCommand" public="false">
+            <argument type="service" id="elasticsearch.connection"/>
+            <argument type="service" id="elasticsearch.mappingMetadataProvider"/>
+            <tag name="console.command"/>
+        </service>
+        <service id="console.command.elasticsearch_info_index" class="Elasticsearch\Bundle\Command\InformationIndexCommand" public="false">
+            <argument type="service" id="elasticsearch.mappingMetadataProvider"/>
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>

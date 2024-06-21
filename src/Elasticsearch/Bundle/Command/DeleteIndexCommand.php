@@ -9,7 +9,6 @@ use Elasticsearch\Bundle\Command\Utils\IndexSelectQuestionTrait;
 use Elasticsearch\Connection\Connection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\MappingMetadataProvider;
-use Elasticsearch\Mapping\Request\MetadataRequestFactory;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -21,12 +20,11 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 
-
 #[AsCommand(
-    name: 'elasticsearch:create-index',
-    description: 'Create Elasticsearch index by mapping',
+    name: 'elasticsearch:delete-index',
+    description: 'Delete Elasticsearch index by mapping',
 )]
-final class CreateIndexCommand extends Command
+class DeleteIndexCommand extends Command
 {
     use BooleanOptionResolverTrait;
     use IndexSelectQuestionTrait;
@@ -34,7 +32,6 @@ final class CreateIndexCommand extends Command
     public function __construct(
         private readonly Connection $connection,
         private readonly MappingMetadataProvider $metadataProvider,
-        private readonly MetadataRequestFactory $metadataRequestFactory,
     ) {
         parent::__construct();
     }
@@ -43,13 +40,12 @@ final class CreateIndexCommand extends Command
     {
         $this
             ->setDefinition([
-                new InputOption('re-create-indexes', '', InputOption::VALUE_REQUIRED, 'Re-create existing indexes (delete exists data)', false),
-                new InputOption('select', '', InputOption::VALUE_REQUIRED, 'Select indexes for create', false),
+                new InputOption('select', '', InputOption::VALUE_REQUIRED, 'Select indexes for delete', false),
                 new InputOption('byName', '', InputOption::VALUE_REQUIRED, 'Index name without prefix for delete'),
                 new InputOption('byClassName', '', InputOption::VALUE_REQUIRED, 'Index class name for delete'),
             ])
             ->setHelp(<<<'EOF'
-The <info>%command.name%</info> command re-create/create elasticsearch indexes.
+The <info>%command.name%</info> command delete elasticsearch indexes.
 
 
 EOF
@@ -61,7 +57,6 @@ EOF
         $rowsFromProgress = $rows = [];
         $io = new SymfonyStyle($input, $output);
         try {
-            $reCreateIndex = $this->resolveBoolOption($input, 're-create-indexes');
             $select = $this->resolveBoolOption($input, 'select');
             $byName = $input->getOption('byName');
             $byClassName = $input->getOption('byClassName');
@@ -82,7 +77,7 @@ EOF
             $find = false;
             foreach ($this->metadataProvider->getMappingMetadata()->getMetadata() as $index) {
                 if ($index->getName() === $byName) {
-                    $rowsFromProgress[] = $this->process($reCreateIndex, $index, $output);
+                    $rowsFromProgress[] = $this->process($index, $output);
                     $find = true;
                     break;
                 }
@@ -99,7 +94,7 @@ EOF
 
                 return Command::FAILURE;
             }
-            $rowsFromProgress[] = $this->process($reCreateIndex, $index, $output);
+            $rowsFromProgress[] = $this->process($index, $output);
         } elseif ($select) {
             $helper = $this->getHelper('question');
             $classes = $this->createIndexSelectQuestion($this->metadataProvider, $helper, $input, $output);
@@ -108,6 +103,7 @@ EOF
 
                 return Command::FAILURE;
             }
+
             foreach ($classes as $class) {
                 $index = $this->metadataProvider->getMappingMetadata()->getIndexByClasss($class);
                 if (null === $index) {
@@ -115,11 +111,11 @@ EOF
 
                     return Command::FAILURE;
                 }
-                $rowsFromProgress[] = $this->process($reCreateIndex, $index, $output);
+                $rowsFromProgress[] = $this->process($index, $output);
             }
         } else {
             foreach ($this->metadataProvider->getMappingMetadata()->getMetadata() as $index) {
-                $rowsFromProgress[] = $this->process($reCreateIndex, $index, $output);
+                $rowsFromProgress[] = $this->process($index, $output);
             }
         }
 
@@ -130,22 +126,21 @@ EOF
         return Command::SUCCESS;
     }
 
-    private function process(bool $reCreateIndex, Index $index, OutputInterface $output): array
+    private function process(Index $index, OutputInterface $output): array
     {
         $rows = [];
-        if ($reCreateIndex) {
-            if ($this->connection->hasIndex($index)) {
-                $this->connection->deleteIndex($index);
-            }
+        $result = false;
+        if ($this->connection->hasIndex($index)) {
+            $this->connection->deleteIndex($index);
+            $result = true;
         }
-        $request = $this->metadataRequestFactory->create($index);
-        $this->connection->createIndex($request);
+
         if ($output->isVerbose()) {
             $rows[] = [
                 $index->getEntityClass(),
                 $index->getName(),
                 new TableCell(
-                    "created \xE2\x9C\x94",
+                    $result ? "deleted \xE2\x9C\x94" : "no exists",
                     [
                         'style' => new TableCellStyle([
                             'align' => 'center',
