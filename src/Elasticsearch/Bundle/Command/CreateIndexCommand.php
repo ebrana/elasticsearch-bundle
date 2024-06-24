@@ -45,8 +45,8 @@ final class CreateIndexCommand extends Command
             ->setDefinition([
                 new InputOption('re-create-indexes', '', InputOption::VALUE_REQUIRED, 'Re-create existing indexes (delete exists data)', false),
                 new InputOption('select', '', InputOption::VALUE_REQUIRED, 'Select indexes for create', false),
-                new InputOption('byName', '', InputOption::VALUE_REQUIRED, 'Index name without prefix for delete'),
-                new InputOption('byClassName', '', InputOption::VALUE_REQUIRED, 'Index class name for delete'),
+                new InputOption('byName', '', InputOption::VALUE_REQUIRED, 'Index name without prefix for create'),
+                new InputOption('byClassName', '', InputOption::VALUE_REQUIRED, 'Index class name for create'),
             ])
             ->setHelp(<<<'EOF'
 The <info>%command.name%</info> command re-create/create elasticsearch indexes.
