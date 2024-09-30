@@ -27,6 +27,7 @@
         <service id="elasticsearch.mappingMetadataFactory" class="Elasticsearch\Mapping\MappingMetadataFactory" public="false">
             <argument type="service" id="elasticsearch.esDriver" />
             <argument>%elasticsearch.mappings%</argument>
+            <argument>%elasticsearch.cache%</argument>
         </service>
 
         <service id="elasticsearch.mappingMetadataProvider" class="Elasticsearch\Mapping\MappingMetadataProvider" public="false">

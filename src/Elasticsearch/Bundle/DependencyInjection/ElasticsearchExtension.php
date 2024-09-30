@@ -7,10 +7,10 @@ namespace Elasticsearch\Bundle\DependencyInjection;
 use Elasticsearch\Indexing\Builders\DefaultDocumentBuilderFactory;
 use Elasticsearch\Mapping\Drivers\AnnotationDriver;
 use Elasticsearch\Mapping\Drivers\JsonDriver;
-use Override;
 use RuntimeException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
+use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
@@ -22,7 +22,6 @@ class ElasticsearchExtension extends Extension
     /**
      * @throws \Exception
      */
-    #[Override]
     public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
@@ -44,6 +43,7 @@ class ElasticsearchExtension extends Extension
         $container->setParameter('elasticsearch.indexPrefix', $config['indexPrefix']);
         $container->setParameter('elasticsearch.mappings', $config['mappings']);
         $container->setParameter('elasticsearch.kibana', $config['kibana']);
+        $container->setParameter('elasticsearch.cache', $config['cache']);
 
         $driverDefinition = match ($config['driver']['type']) {
             'attributes' => $container->register('elasticsearch.esDriver', AnnotationDriver::class),
@@ -67,6 +67,13 @@ class ElasticsearchExtension extends Extension
 
         $defaultDocumentBuilder = new Definition(DefaultDocumentBuilderFactory::class, []);
         $container->getDefinition('elasticsearch.documentFactory')->addMethodCall('addBuilderFactory', [$defaultDocumentBuilder]);
+
+        if ($config['cache']) {
+            /** @var string $adapter */
+            $adapter = $config['cache'];
+            $definition = new ChildDefinition($adapter);
+            $container->getDefinition('elasticsearch.mappingMetadataFactory')->replaceArgument(2, $definition);
+        }
 
         if ($this->hasConsole()) {
             $loader->load('console.xml');

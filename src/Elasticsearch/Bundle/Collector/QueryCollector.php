@@ -95,6 +95,7 @@ class QueryCollector extends AbstractDataCollector
 
     /**
      * @return array<string, array<string, array<bool|string|int>>>
+     * @throws \Psr\Cache\InvalidArgumentException
      */
     private function provideEntitiesMapping(): array
     {
