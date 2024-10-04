@@ -55,7 +55,7 @@
             </div>
             <div class="sf-toolbar-info-piece">
                 <b>Server version</b>
-                <span class="sf-toolbar-status {{ collector.compatibility ? '': 'sf-toolbar-status-red' }}">{{ collector.info['version']['number'] }}</span>
+                <span class="sf-toolbar-status {{ collector.compatible ? '': 'sf-toolbar-status-red' }}">{{ collector.info['version']['number'] }}</span>
             </div>
         {% endset %}
 
@@ -140,7 +140,7 @@
     <div class="metrics">
         <div class="metric-group">
             <div class="metric">
-                <span class="value value-is-icon {{ not collector.compatibility ? 'value-shows-red-color' }}">{{ source('@WebProfiler/Icon/' ~ (collector.compatibility ? 'yes' : 'no') ~ '.svg') }}</span>
+                <span class="value value-is-icon {{ not collector.compatible ? 'value-shows-red-color' }}">{{ source('@WebProfiler/Icon/' ~ (collector.compatible ? 'yes' : 'no') ~ '.svg') }}</span>
                 <span class="label">Compatibility</span>
             </div>
             <div class="metric">
