@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Bundle\Collector;
 
+use Elasticsearch\Connection\Connection;
 use Elasticsearch\Debug\DebugDataHolder;
 use Elasticsearch\Mapping\Exceptions\MappingJsonCreateException;
 use Elasticsearch\Mapping\MappingMetadataProvider;
 use Elasticsearch\Mapping\Request\MetadataRequestFactory;
-use Override;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Bundle\FrameworkBundle\DataCollector\AbstractDataCollector;
@@ -18,21 +18,24 @@ use Symfony\Component\HttpFoundation\Response;
 class QueryCollector extends AbstractDataCollector
 {
     private ?int $invalidEntityCount = null;
+    private const string COMPATIBLE_VERSION = '8.0.0';
+    private const string NOT_COMPATIBLE_VERSION = '9.0.0';
 
     public function __construct(
         private readonly DebugDataHolder $debugDataHolder,
         private readonly MappingMetadataProvider $mappingMetadataProvider,
+        private readonly Connection $connection,
         private readonly string $kibana,
     ) {
     }
 
-    #[Override]
     public function collect(Request $request, Response $response, ?\Throwable $exception = null): void
     {
         $this->data = [
             'queries'    => $this->debugDataHolder->getData(),
             'entities'   => $this->provideEntitiesMapping(),
             'kibana'     => $this->kibana,
+            'info'       => $this->connection->getServerInfo(),
             'connection' => [
                 'default' => 'elasticsearch.connection',
             ],
@@ -78,6 +81,19 @@ class QueryCollector extends AbstractDataCollector
     public function getKibana(): string
     {
         return $this->data['kibana'];
+    }
+
+    public function getInfo(): array
+    {
+        $this->data['info']['version']['build_snapshot'] = true;
+        return $this->data['info'];
+    }
+
+    public function isCompatible(): bool
+    {
+        return
+            version_compare($this->data['info']['version']['number'], self::COMPATIBLE_VERSION, '>=') &&
+            version_compare($this->data['info']['version']['number'], self::NOT_COMPATIBLE_VERSION, '<');
     }
 
     /**

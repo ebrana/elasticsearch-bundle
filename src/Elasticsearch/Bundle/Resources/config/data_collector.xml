@@ -8,6 +8,7 @@
         <service id="elasticsearch.data_collector.request" class="Elasticsearch\Bundle\Collector\QueryCollector" public="false">
             <argument type="service" id="elasticsearch.debugDataHolder" />
             <argument type="service" id="elasticsearch.mappingMetadataProvider" />
+            <argument type="service" id="elasticsearch.connection" />
             <argument>%elasticsearch.kibana%</argument>
             <tag
                 name="data_collector"
