@@ -12,6 +12,8 @@ composer require ebrana/elasticsearch-bundle
 elasticsearch:
     profiling: true
     indexPrefix: "katalog_"
+    # cache je nepovinné (adapters: https://symfony.com/doc/current/components/cache.html#available-cache-adapters)
+    cache: 'cache.adapter.filesystem'
     # tato sekce může být vynechána, protože attributes je default driver
     #    driver:
     #        type: "attributes" # attributes nebo json

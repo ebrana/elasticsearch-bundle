@@ -12,6 +12,9 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 
 trait IndexSelectQuestionTrait
 {
+    /**
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
     private function createIndexSelectQuestion(
         MappingMetadataProvider $metadataProvider,
         HelperInterface $helper,

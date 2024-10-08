@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Elasticsearch\Bundle\DependencyInjection;
 
-use Override;
 use Symfony\Component\Config\Definition\Builder\ArrayNodeDefinition;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -15,7 +14,6 @@ readonly class Configuration implements ConfigurationInterface
     {
     }
 
-    #[Override]
     public function getConfigTreeBuilder(): TreeBuilder
     {
         $treeBuilder = new TreeBuilder('elasticsearch');
@@ -41,6 +39,7 @@ readonly class Configuration implements ConfigurationInterface
             ->end()
         ->end();
         $children->scalarNode('kibana')->defaultValue('http://localhost:5601')->end();
+        $children->scalarNode('cache')->defaultNull()->end();
         $children->arrayNode('connection')
             ->children()
                 ->arrayNode('hosts')->scalarPrototype()->defaultValue(['localhost:9200'])->end()->end()

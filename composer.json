@@ -1,6 +1,6 @@
 {
     "name": "ebrana/elasticsearch-bundle",
-    "license": "proprietary",
+    "license": "MIT",
     "type": "library",
     "autoload": {
         "psr-4": {
@@ -11,7 +11,7 @@
         "php": ">=8.3.0",
         "ebrana/elasticsearch": "dev-main",
 	    "netom/lz-string-php": "~v1.3",
-        "symfony/framework-bundle": "^7.0",
+        "symfony/framework-bundle": "~7.1",
         "ext-json": "*"
     },
     "require-dev": {
