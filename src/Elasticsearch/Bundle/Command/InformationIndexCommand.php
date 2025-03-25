@@ -56,7 +56,11 @@ EOF
                         if ($fields !== '') {
                             $fields .= ', ';
                         }
-                        $fields .= $name . '[' . $field['type'] . ']';
+                        if (isset($field['type'])) {
+                            $fields .= $name . '[' . $field['type'] . ']';
+                        } else {
+                            $fields .= $name . '[properties]';
+                        }
                     }
                     $fields = '(' . $fields . ')';
                 }
