@@ -162,6 +162,7 @@ EOF
 
     private function process(bool $reCreateIndex, Index $index, OutputInterface $output): array
     {
+        $indexPrefix = $this->connection->getIndexPrefix();
         $rows = [];
         if ($reCreateIndex) {
             if ($this->connection->hasIndex($index)) {
@@ -173,7 +174,7 @@ EOF
         if ($output->isVerbose()) {
             $rows[] = [
                 $index->getEntityClass(),
-                $index->getName(),
+                $index->getNameWithPrefix($indexPrefix),
                 new TableCell(
                     "created \xE2\x9C\x94",
                     [

@@ -157,6 +157,7 @@ EOF
 
     private function process(Index $index, OutputInterface $output): array
     {
+        $indexPrefix = $this->connection->getIndexPrefix();
         $rows = [];
         $result = false;
         if ($this->connection->hasIndex($index)) {
@@ -167,7 +168,7 @@ EOF
         if ($output->isVerbose()) {
             $rows[] = [
                 $index->getEntityClass(),
-                $index->getName(),
+                $index->getNameWithPrefix($indexPrefix),
                 new TableCell(
                     $result ? "deleted \xE2\x9C\x94" : "no exists",
                     [

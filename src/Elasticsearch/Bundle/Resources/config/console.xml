@@ -18,6 +18,7 @@
         </service>
         <service id="console.command.elasticsearch_info_index" class="Elasticsearch\Bundle\Command\InformationIndexCommand" public="false">
             <argument type="service" id="elasticsearch.mappingMetadataProvider"/>
+            <argument>%elasticsearch.indexPrefix%</argument>
             <tag name="console.command"/>
         </service>
     </services>
