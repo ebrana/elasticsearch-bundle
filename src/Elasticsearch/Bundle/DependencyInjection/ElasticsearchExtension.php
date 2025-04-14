@@ -59,7 +59,7 @@ class ElasticsearchExtension extends Extension
             } else {
                 $reference = new Definition($config['driver']['keyResolver']);
             }
-            $driverDefinition->addMethodCall('setKeyResolver', [$reference]);
+            $driverDefinition->addMethodCall('setDefaultKeyResolver', [$reference]);
         }
         $container->setDefinition('elasticsearch.esDriver', $driverDefinition);
 

@@ -59,5 +59,28 @@ class ProductDocumentBuilderFactory implements DocumentBuilderFactoryInterface
 }
 ````
 
+#### Custom Key Resolver
+ObjectType a NestedType disponuje možností resolvovat názvy fieldů. Pro Annotation driver
+je možné si nastavit globálně resolver přes keyResolver atribut (viz. yaml výše).
+Pokud z nějakého důvodu je potřeba u property vlastní resolver, tak je to možné udělat takto:
+
+
+Vytvoříme si Custom resolver jako služvu DI kontejneru a označíme tagem:
+````php
+#[AutoconfigureTag('elasticsearch.key_resolver')]
+class CustomKeyResolver implements KeyResolverInterface
+{
+   ...
+}
+````
+a upravíme PHP atribut následovně:
+````php
+#[NestedType(
+   keyResolver: CustomKeyResolver::class,
+   fieldsTemplate: new TextType(),
+)]
+protected array $sellingPrice = [];
+````
+
 #### Profiler
 ![screen.png](screen.png)
