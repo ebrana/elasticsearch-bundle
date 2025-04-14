@@ -28,8 +28,10 @@ class ElasticsearchExtension extends Extension
         $configuration = $this->getConfiguration($configs, $container);
         $config = $this->processConfiguration($configuration, $configs);
 
-        $this->registerDataCollectorConfiguration($container, $config, $loader);
+        $this->registerConfiguration($container, $config, $loader);
     }
+
+
 
     /**
      * @param \Symfony\Component\DependencyInjection\ContainerBuilder     $container
@@ -38,7 +40,7 @@ class ElasticsearchExtension extends Extension
      * @throws \Exception
      * @phpstan-ignore-next-line
      */
-    private function registerDataCollectorConfiguration(ContainerBuilder $container, array $config, XmlFileLoader $loader): void
+    private function registerConfiguration(ContainerBuilder $container, array $config, XmlFileLoader $loader): void
     {
         $container->setParameter('elasticsearch.indexPrefix', $config['indexPrefix']);
         $container->setParameter('elasticsearch.mappings', $config['mappings']);
@@ -66,7 +68,8 @@ class ElasticsearchExtension extends Extension
         $this->configureConnection($container, $config, $loader);
 
         $defaultDocumentBuilder = new Definition(DefaultDocumentBuilderFactory::class, []);
-        $container->getDefinition('elasticsearch.documentFactory')->addMethodCall('addBuilderFactory', [$defaultDocumentBuilder]);
+        $documentFactory = $container->getDefinition('elasticsearch.documentFactory');
+        $documentFactory->addMethodCall('addBuilderFactory', [$defaultDocumentBuilder]);
 
         if ($config['cache']) {
             /** @var string $adapter */

@@ -1,5 +1,5 @@
 # Elasticsearch Bundle
-Elasticsearch Symfony bundle pro balíček https://github.com/ebrana/elasticsearch.
+Elasticsearch Symfony Bundle pro balíček https://github.com/ebrana/elasticsearch.
 
 ### Instalace
 ````
@@ -8,7 +8,7 @@ composer require ebrana/elasticsearch-bundle
 
 #### Konfigurace
 
-````
+````yaml
 elasticsearch:
     profiling: true
     indexPrefix: "katalog_"
@@ -46,6 +46,17 @@ elasticsearch:
                 key: ""
                 password: ""
         
+````
+
+#### Registrace Document Builder Factories
+Pro registraci použijte PHP atribut nad třídu builder factory
+
+````php
+#[AutoconfigureTag('elasticsearch.document_builder_factory')]
+class ProductDocumentBuilderFactory implements DocumentBuilderFactoryInterface
+{
+   ...
+}
 ````
 
 #### Profiler
