@@ -65,7 +65,7 @@ je možné si nastavit globálně resolver přes keyResolver atribut (viz. yaml 
 Pokud z nějakého důvodu je potřeba u property vlastní resolver, tak je to možné udělat takto:
 
 
-Vytvoříme si Custom resolver jako služvu DI kontejneru a označíme tagem:
+Vytvoříme si Custom resolver jako službu DI kontejneru a označíme tagem:
 ````php
 #[AutoconfigureTag('elasticsearch.key_resolver')]
 class CustomKeyResolver implements KeyResolverInterface
