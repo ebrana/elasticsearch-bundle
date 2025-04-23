@@ -20,6 +20,7 @@ class InformationIndexCommand extends Command
 {
     public function __construct(
         private readonly MappingMetadataProvider $metadataProvider,
+        private readonly ?string $indexPrefix = null,
     ) {
         parent::__construct();
     }
@@ -45,7 +46,7 @@ EOF
             ];
             $rows[] = [
                 $index->getEntityClass(),
-                $index->getName(),
+                $index->getNameWithPrefix($this->indexPrefix),
             ];
             $rows[] = ['<info>Property name</>', '<info>Type</>'];
             $rows[] = new TableSeparator();

@@ -1,5 +1,5 @@
 # Elasticsearch Bundle
-Elasticsearch Symfony bundle pro balíček https://github.com/ebrana/elasticsearch.
+Elasticsearch Symfony Bundle pro balíček https://github.com/ebrana/elasticsearch.
 
 ### Instalace
 ````
@@ -8,7 +8,7 @@ composer require ebrana/elasticsearch-bundle
 
 #### Konfigurace
 
-````
+````yaml
 elasticsearch:
     profiling: true
     indexPrefix: "katalog_"
@@ -46,6 +46,40 @@ elasticsearch:
                 key: ""
                 password: ""
         
+````
+
+#### Registrace Document Builder Factories
+Pro registraci použijte PHP atribut nad třídu builder factory
+
+````php
+#[AutoconfigureTag('elasticsearch.document_builder_factory')]
+class ProductDocumentBuilderFactory implements DocumentBuilderFactoryInterface
+{
+   ...
+}
+````
+
+#### Custom Key Resolver
+ObjectType a NestedType disponuje možností resolvovat názvy fieldů. Pro Annotation driver
+je možné si nastavit globálně resolver přes keyResolver atribut (viz. yaml výše).
+Pokud z nějakého důvodu je potřeba u property vlastní resolver, tak je to možné udělat takto:
+
+
+Vytvoříme si Custom resolver jako službu DI kontejneru a označíme tagem:
+````php
+#[AutoconfigureTag('elasticsearch.key_resolver')]
+class CustomKeyResolver implements KeyResolverInterface
+{
+   ...
+}
+````
+a upravíme PHP atribut následovně:
+````php
+#[NestedType(
+   keyResolver: CustomKeyResolver::class,
+   fieldsTemplate: new TextType(),
+)]
+protected array $sellingPrice = [];
 ````
 
 #### Profiler

@@ -34,7 +34,7 @@ readonly class Configuration implements ConfigurationInterface
         $children->arrayNode('driver')
             ->addDefaultsIfNotSet()
             ->children()
-                ->enumNode("type")->values(['attributes'])->cannotBeEmpty()->defaultValue('attributes')->end()
+                ->enumNode("type")->values(['attributes', 'json'])->cannotBeEmpty()->defaultValue('attributes')->end()
                 ->scalarNode('keyResolver')->defaultValue(null)->end()
             ->end()
         ->end();

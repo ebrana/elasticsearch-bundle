@@ -49,7 +49,6 @@
 
         <service id="elasticsearch.documentFactory" class="Elasticsearch\Indexing\DocumentFactory" public="false">
             <argument type="service" id="elasticsearch.mappingMetadataProvider" />
-            <argument>%elasticsearch.indexPrefix%</argument>
         </service>
 
         <service id="Elasticsearch\Indexing\DocumentFactory" alias="elasticsearch.documentFactory" public="false" />
