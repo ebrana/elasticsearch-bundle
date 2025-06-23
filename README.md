@@ -17,7 +17,6 @@ elasticsearch:
     # tato sekce může být vynechána, protože attributes je default driver
     #    driver:
     #        type: "attributes" # attributes nebo json
-    #        keyResolver: Elasticsearch\Bundle\KeyResolver # resolvuje klíče typu nested nebo object
     mappings:
         - App\Entity\Elasticsearch\Product
     connection:
@@ -49,30 +48,16 @@ elasticsearch:
 ````
 
 #### Registrace Document Builder Factories
-Pro registraci použijte PHP atribut nad třídu builder factory
+Pro registraci stačí dědit ``DocumentBuilderFactoryInterface`` a zaregistrovat jako service do kontejneru.
 
-````php
-#[AutoconfigureTag('elasticsearch.document_builder_factory')]
-class ProductDocumentBuilderFactory implements DocumentBuilderFactoryInterface
-{
-   ...
-}
-````
-
-#### Custom Key Resolver
+#### Key Resolver
 ObjectType a NestedType disponuje možností resolvovat názvy fieldů. Pro Annotation driver
 je možné si nastavit globálně resolver přes keyResolver atribut (viz. yaml výše).
 Pokud z nějakého důvodu je potřeba u property vlastní resolver, tak je to možné udělat takto:
 
 
-Vytvoříme si Custom resolver jako službu DI kontejneru a označíme tagem:
-````php
-#[AutoconfigureTag('elasticsearch.key_resolver')]
-class CustomKeyResolver implements KeyResolverInterface
-{
-   ...
-}
-````
+Vytvoříme si Custom resolver jako službu DI kontejneru a implementujeme rozhranní ``KeyResolverInterface``.
+
 a upravíme PHP atribut následovně:
 ````php
 #[NestedType(
@@ -81,6 +66,33 @@ a upravíme PHP atribut následovně:
 )]
 protected array $sellingPrice = [];
 ````
+
+#### Post Event callback
+Pokud potřebuji ještě nějaké dynamické prvky, pak si mohu u attributu index nastavit
+postEventClass a zaregistrovat service do kontejneru implementující rozhranní PostEventInterface.
+Například:
+
+```php
+<?php
+
+declare(strict_types=1);
+
+namespace Elasticsearch\Tests;
+
+use Elasticsearch\Mapping\Drivers\Events\PostEventInterface;
+use Elasticsearch\Mapping\Index;
+use Elasticsearch\Mapping\Types\Text\TextType;
+
+class PostEventSample implements PostEventInterface
+{
+    public function postCreateIndex(Index $index): void
+    {
+        $field = new TextType(name: 'postEventName');
+        $field->setFieldName('postEventName');
+        $index->addProperty($field);
+    }
+}
+```
 
 #### Profiler
 ![screen.png](screen.png)

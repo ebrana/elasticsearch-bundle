@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Elasticsearch\Bundle\DependencyInjection;
 
 use Elasticsearch\Indexing\Builders\DefaultDocumentBuilderFactory;
+use Elasticsearch\Indexing\Interfaces\DocumentBuilderFactoryInterface;
 use Elasticsearch\Mapping\Drivers\AnnotationDriver;
+use Elasticsearch\Mapping\Drivers\Events\PostEventInterface;
 use Elasticsearch\Mapping\Drivers\JsonDriver;
+use Elasticsearch\Mapping\Drivers\Resolvers\KeyResolver\KeyResolverInterface;
 use RuntimeException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\Console\Application;
@@ -53,15 +56,14 @@ class ElasticsearchExtension extends Extension
             default => throw new RuntimeException('ES driver not found.'),
         };
         $driverDefinition->addTag('elasticsearch.esDriver');
-        if ($config['driver']['keyResolver']) {
-            if ($config['driver']['keyResolver'][0] === '@') {
-                $reference = new Reference(ltrim($config['driver']['keyResolver'], '@'));
-            } else {
-                $reference = new Definition($config['driver']['keyResolver']);
-            }
-            $driverDefinition->addMethodCall('setDefaultKeyResolver', [$reference]);
-        }
         $container->setDefinition('elasticsearch.esDriver', $driverDefinition);
+
+        $container->registerForAutoconfiguration(KeyResolverInterface::class)
+            ->addTag('elasticsearch.key_resolver');
+        $container->registerForAutoconfiguration(PostEventInterface::class)
+            ->addTag('elasticsearch.post_event');
+        $container->registerForAutoconfiguration(DocumentBuilderFactoryInterface::class)
+            ->addTag('elasticsearch.document_builder_factory');
 
         $loader->load('elasticsearch.xml');
 

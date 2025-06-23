@@ -8,7 +8,7 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
-class KeyResolversPass implements CompilerPassInterface
+class ResolvingKeyResolversPass implements CompilerPassInterface
 {
     public function process(ContainerBuilder $container): void
     {
@@ -16,11 +16,10 @@ class KeyResolversPass implements CompilerPassInterface
             return;
         }
 
-        $definition = $container->findDefinition('elasticsearch.esDriver');
-        $taggedServices = $container->findTaggedServiceIds('elasticsearch.key_resolver');
         $keyResolvers = [];
+        $definition = $container->findDefinition('elasticsearch.esDriver');
 
-        foreach ($taggedServices as $id => $tags) {
+        foreach (array_keys($container->findTaggedServiceIds('elasticsearch.key_resolver')) as $id) {
             $keyResolvers[$id] = new Reference($id);
         }
 

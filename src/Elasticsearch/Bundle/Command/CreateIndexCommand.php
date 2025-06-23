@@ -10,6 +10,7 @@ use Elasticsearch\Connection\Connection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\MappingMetadataProvider;
 use Elasticsearch\Mapping\Request\MetadataRequestFactory;
+use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -94,6 +95,9 @@ EOF
                     break;
             }
         } catch (\Exception $exception) {
+            if ($output->isVerbose()) {
+                $io->error($exception->getMessage());
+            }
             return Command::FAILURE;
         }
 
@@ -114,7 +118,6 @@ EOF
 
         $io->error(sprintf('Index name "%s" not found.', $byName));
         throw new RuntimeException('Index name not found.');
-
     }
 
     private function processByClassName(bool $reCreateIndex, string $byClassName, SymfonyStyle $io, OutputInterface $output): array
