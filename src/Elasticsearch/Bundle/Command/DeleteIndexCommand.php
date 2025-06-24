@@ -9,6 +9,7 @@ use Elasticsearch\Bundle\Command\Utils\IndexSelectQuestionTrait;
 use Elasticsearch\Connection\Connection;
 use Elasticsearch\Mapping\Index;
 use Elasticsearch\Mapping\MappingMetadataProvider;
+use RuntimeException;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Exception\InvalidArgumentException;
@@ -89,6 +90,9 @@ EOF
                     break;
             }
         } catch (\Exception $exception) {
+            if ($output->isVerbose()) {
+                $io->error($exception->getMessage());
+            }
             return Command::FAILURE;
         }
 
