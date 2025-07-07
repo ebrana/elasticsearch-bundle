@@ -187,7 +187,7 @@
                                 <td class="nowrap">{{ loop.index }}</td>
                                 <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
                                 <td>
-                                    {{ query.query }}
+                                    {{ query.query|elasticsearch_pretty_query }}
                                     {% if query.body is not null %}
                                         <span>{{ query.body }}</span>
                                         <div class="text-small font-normal">
@@ -292,7 +292,7 @@
                                             <a href="{{ body.file|file_link(body.line) }}">{{ class }}</a>
                                             {% if type != 'invalid' %}
                                                 <br>
-                                                {{ body.body }}
+                                                {{ body.body|elasticsearch_pretty_query }}
                                                 <div class="text-small font-normal">
                                                     &nbsp;
                                                     <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-mapping-query-{{ loop.index }}" data-toggle-alt-content="Hide pretty query">View pretty query</a>
