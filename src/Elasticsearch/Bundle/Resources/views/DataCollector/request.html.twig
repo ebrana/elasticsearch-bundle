@@ -187,16 +187,18 @@
                                 <td class="nowrap">{{ loop.index }}</td>
                                 <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
                                 <td>
-                                    {{ query.query|elasticsearch_pretty_query }}
+                                    {{ query.query }}
                                     {% if query.body is not null %}
-                                        <span>{{ query.body }}</span>
-                                        <div class="text-small font-normal">
-                                            &nbsp;
-                                            <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ loop.index }}" data-toggle-alt-content="Hide pretty query">View pretty query</a>
-                                        </div>
-                                        <div id="original-query-{{ loop.index }}" class="sql-runnable hidden">
-                                            <pre>{{ query.body|elasticsearch_pretty_query }}</pre>
-                                            <button class="btn btn-sm hidden" data-clipboard-text="{{ query.body|e('html_attr') }}">Copy</button>
+                                        <div class="font-normal">
+                                            <span>{{ query.body|elasticsearch_pretty_query }}</span>
+                                            <div class="text-small font-normal">
+                                                &nbsp;
+                                                <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#original-query-{{ loop.index }}" data-toggle-alt-content="Hide pretty query">View pretty query</a>
+                                            </div>
+                                            <div id="original-query-{{ loop.index }}" class="sql-runnable hidden">
+                                                <pre>{{ query.body|elasticsearch_pretty_query }}</pre>
+                                                <button class="btn btn-sm hidden" data-clipboard-text="{{ query.body|e('html_attr') }}">Copy</button>
+                                            </div>
                                         </div>
                                     {% endif %}
                                 </td>
