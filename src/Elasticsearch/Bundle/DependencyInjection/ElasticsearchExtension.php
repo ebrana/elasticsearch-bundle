@@ -16,7 +16,7 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\DependencyInjection\ChildDefinition;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 
@@ -27,7 +27,7 @@ class ElasticsearchExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
+        $loader = new PhpFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $configuration = $this->getConfiguration($configs, $container);
         $config = $this->processConfiguration($configuration, $configs);
 
@@ -39,11 +39,11 @@ class ElasticsearchExtension extends Extension
     /**
      * @param \Symfony\Component\DependencyInjection\ContainerBuilder     $container
      * @param array<array>                                                $config
-     * @param \Symfony\Component\DependencyInjection\Loader\XmlFileLoader $loader
+     * @param \Symfony\Component\DependencyInjection\Loader\PhpFileLoader $loader
      * @throws \Exception
      * @phpstan-ignore-next-line
      */
-    private function registerConfiguration(ContainerBuilder $container, array $config, XmlFileLoader $loader): void
+    private function registerConfiguration(ContainerBuilder $container, array $config, PhpFileLoader $loader): void
     {
         $container->setParameter('elasticsearch.indexPrefix', $config['indexPrefix']);
         $container->setParameter('elasticsearch.mappings', $config['mappings']);
@@ -65,7 +65,7 @@ class ElasticsearchExtension extends Extension
         $container->registerForAutoconfiguration(DocumentBuilderFactoryInterface::class)
             ->addTag('elasticsearch.document_builder_factory');
 
-        $loader->load('elasticsearch.xml');
+        $loader->load('elasticsearch.php');
 
         $this->configureConnection($container, $config, $loader);
 
@@ -81,7 +81,7 @@ class ElasticsearchExtension extends Extension
         }
 
         if ($this->hasConsole()) {
-            $loader->load('console.xml');
+            $loader->load('console.php');
         }
     }
 
@@ -104,7 +104,7 @@ class ElasticsearchExtension extends Extension
      * @phpstan-ignore-next-line
      * @throws \Exception
      */
-    private function configureConnection(ContainerBuilder $container, array $config, XmlFileLoader $loader): void
+    private function configureConnection(ContainerBuilder $container, array $config, PhpFileLoader $loader): void
     {
         $connectionFactory = $container->getDefinition('elasticsearch.connection_factory');
 
@@ -188,8 +188,8 @@ class ElasticsearchExtension extends Extension
         }
 
         if (isset($config['profiling']) && $config['profiling'] && $container->hasParameter('kernel.debug') && $container->getParameter('kernel.debug')) {
-            $loader->load('data_collector.xml');
-            $loader->load('debug.xml');
+            $loader->load('data_collector.php');
+            $loader->load('debug.php');
         }
     }
 }
