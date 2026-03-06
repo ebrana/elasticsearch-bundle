@@ -12,6 +12,7 @@
         "ebrana/elasticsearch": "dev-main",
 	    "netom/lz-string-php": "~v1.3",
         "symfony/framework-bundle": "~7.1 | ~8.0",
+        "symfony/security-csrf": "~7.1 | ~8.0",
         "ext-json": "*"
     },
     "require-dev": {

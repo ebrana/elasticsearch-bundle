@@ -4,7 +4,7 @@
 
 {% block menu %}
     {# This left-hand menu appears when using the full-screen profiler. #}
-    <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }} {{ collector.querycount == 0 ? 'disabled' }}">
+    <span class="label {{ collector.invalidEntityCount > 0 ? 'label-status-error' }}">
         <span class="icon">
             {{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}
         </span>
@@ -18,49 +18,47 @@
 {% endblock %}
 
 {% block toolbar %}
-    {% if collector.querycount > 0 or collector.invalidEntityCount > 0 %}
-        {% set icon %}
-            {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
+    {% set icon %}
+        {% set status = collector.invalidEntityCount > 0 ? 'red' : collector.querycount > 50 ? 'yellow' %}
 
-            {% if profiler_markup_version >= 3 %}
-                {{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}
-            {% else %}
-                <span class="icon">{{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}</span>
-            {% endif %}
+        {% if profiler_markup_version >= 3 %}
+            {{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}
+        {% else %}
+            <span class="icon">{{ include('@Elasticsearch/DataCollector/elastic-svgrepo-com.svg') }}</span>
+        {% endif %}
 
-            {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
-                <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
-                <span class="sf-toolbar-label">errors</span>
-            {% else %}
-                <span class="sf-toolbar-value">{{ collector.querycount }}</span>
-                <span class="sf-toolbar-info-piece-additional-detail">
-                    <span class="sf-toolbar-label">in</span>
-                    <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
-                    <span class="sf-toolbar-label">ms</span>
-                </span>
-            {% endif %}
-        {% endset %}
-        {% set text %}
-            <div class="sf-toolbar-info-piece">
-                <b>Elasticsearch Queries</b>
-                <span class="sf-toolbar-status {{ collector.querycount > 50 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.querycount }}</span>
-            </div>
-            <div class="sf-toolbar-info-piece">
-                <b>Query time</b>
-                <span>{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
-            </div>
-            <div class="sf-toolbar-info-piece">
-                <b>Invalid entities</b>
-                <span class="sf-toolbar-status {{ collector.invalidEntityCount > 0 ? 'sf-toolbar-status-red' : '' }}">{{ collector.invalidEntityCount }}</span>
-            </div>
-            <div class="sf-toolbar-info-piece">
-                <b>Server version</b>
-                <span class="sf-toolbar-status {{ collector.compatible ? '': 'sf-toolbar-status-red' }}">{{ collector.info['version']['number'] }}</span>
-            </div>
-        {% endset %}
+        {% if collector.querycount == 0 and collector.invalidEntityCount > 0 %}
+            <span class="sf-toolbar-value">{{ collector.invalidEntityCount }}</span>
+            <span class="sf-toolbar-label">errors</span>
+        {% else %}
+            <span class="sf-toolbar-value">{{ collector.querycount }}</span>
+            <span class="sf-toolbar-info-piece-additional-detail">
+                <span class="sf-toolbar-label">in</span>
+                <span class="sf-toolbar-value">{{ '%0.2f'|format(collector.time * 1000) }}</span>
+                <span class="sf-toolbar-label">ms</span>
+            </span>
+        {% endif %}
+    {% endset %}
+    {% set text %}
+        <div class="sf-toolbar-info-piece">
+            <b>Elasticsearch Queries</b>
+            <span class="sf-toolbar-status {{ collector.querycount > 50 ? 'sf-toolbar-status-yellow' : '' }}">{{ collector.querycount }}</span>
+        </div>
+        <div class="sf-toolbar-info-piece">
+            <b>Query time</b>
+            <span>{{ '%0.2f'|format(collector.time * 1000) }} ms</span>
+        </div>
+        <div class="sf-toolbar-info-piece">
+            <b>Invalid entities</b>
+            <span class="sf-toolbar-status {{ collector.invalidEntityCount > 0 ? 'sf-toolbar-status-red' : '' }}">{{ collector.invalidEntityCount }}</span>
+        </div>
+        <div class="sf-toolbar-info-piece">
+            <b>Server version</b>
+            <span class="sf-toolbar-status {{ collector.compatible ? '': 'sf-toolbar-status-red' }}">{{ collector.info['version']['number'] }}</span>
+        </div>
+    {% endset %}
 
-        {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url, status: status|default('') }) }}
-    {% endif %}
+    {{ include('@WebProfiler/Profiler/toolbar_item.html.twig', { link: profiler_url, status: status|default('') }) }}
 {% endblock %}
 
 {% block panel %}
@@ -133,6 +131,99 @@
         }
 
         {% endif %}
+
+        .playground-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .playground-form {
+            display: grid;
+            gap: 12px;
+        }
+
+        .playground-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .playground-form input[type="text"],
+        .playground-form select,
+        .playground-form textarea {
+            width: 100%;
+            box-sizing: border-box;
+            font-family: monospace;
+        }
+
+        .playground-editor {
+            border: 1px solid var(--table-border-color, #d5dce5);
+            border-radius: 6px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .playground-editor-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--table-border-color, #d5dce5);
+            background: var(--table-background, #f6f9fc);
+        }
+
+        .playground-editor-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .playground-editor-status {
+            font-size: 12px;
+            color: #c7d0dd;
+        }
+
+        .playground-editor-status.is-valid {
+            color: #7ee787;
+        }
+
+        .playground-editor-status.is-invalid {
+            color: #ff9b9b;
+        }
+
+        .playground-editor textarea {
+            display: block;
+            min-height: 320px;
+            margin: 0;
+            padding: 12px;
+            border: 0;
+            resize: vertical;
+            line-height: 1.5;
+            tab-size: 4;
+            background: #fff;
+            color: #101828;
+            caret-color: #101828;
+        }
+
+        .playground-editor-help {
+            margin: 0;
+            font-size: 12px;
+            color: #c7d0dd;
+        }
+
+        .playground-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .playground-output pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
     </style>
 
     <h2>Elasticsearch Metrics</h2>
@@ -187,6 +278,34 @@
                                 <td class="nowrap">{{ loop.index }}</td>
                                 <td class="nowrap">{{ '%0.2f'|format(query.executionMS * 1000) }}&nbsp;ms</td>
                                 <td>
+                                    {% set queryParts = query.query|split(' ') %}
+                                    {% set queryPath = queryParts|last %}
+                                    {% set searchPath = queryPath|split('?')|first %}
+                                    {% set inferredIndex = '' %}
+                                    {% set inferredOperation = 'search' %}
+                                    {% set playgroundQueryBody = query.body %}
+                                    {% if '/_search' in searchPath and not (searchPath starts with '/_search') %}
+                                        {% set inferredIndex = searchPath|replace({'/_search': ''})|trim('/') %}
+                                    {% elseif '/_count' in searchPath and not (searchPath starts with '/_count') %}
+                                        {% set inferredIndex = searchPath|replace({'/_count': ''})|trim('/') %}
+                                        {% set inferredOperation = 'count' %}
+                                    {% elseif '/_count' in searchPath %}
+                                        {% set inferredOperation = 'count' %}
+                                    {% endif %}
+                                    {% if query.body is null and '/_count' in searchPath %}
+                                        {% set playgroundQueryBody = '{\n    "query": {\n        "match_all": {}\n    }\n}' %}
+                                    {% endif %}
+                                    {% if playgroundQueryBody is not null and ('/_search' in searchPath or '/_count' in searchPath) %}
+                                        <button
+                                            class="btn btn-sm"
+                                            type="button"
+                                            data-playground-load="true"
+                                            data-playground-query="{{ playgroundQueryBody|elasticsearch_pretty_query|e('html_attr') }}"
+                                            data-playground-index="{{ inferredIndex|e('html_attr') }}"
+                                            data-playground-operation="{{ inferredOperation }}"
+                                        >Execute</button>
+                                        <br>
+                                    {% endif %}
                                     {{ query.query }}
                                     {% if query.body is not null %}
                                         <div class="font-normal">
@@ -349,6 +468,72 @@
                             <span class="label">{{ key|capitalize|replace({"_": " "}) }}</span>
                         </div>
                     {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="tab">
+            <h3 class="tab-title">Playground</h3>
+            <div class="tab-content">
+                <div class="playground-grid">
+                    <div class="help">
+                        <p>Read-only Elasticsearch playground available only in <code>dev</code>. Allowed body keys: <code>query</code>, <code>aggs</code>, <code>sort</code>, <code>from</code>, <code>size</code>, <code>_source</code>, <code>collapse</code>, <code>search_after</code>, <code>track_total_hits</code>, <code>min_score</code>, <code>post_filter</code>.</p>
+                        {% if collector.playgroundIndices is empty %}
+                            <p>No Elasticsearch indexes are available from registered mapping metadata.</p>
+                        {% endif %}
+                    </div>
+
+                    <form id="elasticsearch-playground-form" class="playground-form">
+                        <input type="hidden" name="_token" value="{{ csrf_token('elasticsearch_playground') }}">
+                        <input type="hidden" name="operation" value="search">
+
+                        <div>
+                            <label for="elasticsearch-playground-index">Index</label>
+                            <select id="elasticsearch-playground-index" name="index" {{ collector.playgroundIndices is empty ? 'disabled' }}>
+                                {% for index in collector.playgroundIndices %}
+                                    <option value="{{ index }}">{{ index }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div>
+                            <label for="elasticsearch-playground-query">JSON query body</label>
+                            <div class="playground-editor">
+                                <div class="playground-editor-toolbar">
+                                    <div class="playground-editor-actions">
+                                        <button class="btn btn-sm" type="button" data-json-editor-action="format">Format JSON</button>
+                                        <button class="btn btn-sm" type="button" data-json-editor-action="minify">Minify</button>
+                                        <button class="btn btn-sm" type="button" data-json-editor-action="validate">Validate</button>
+                                    </div>
+                                    <div id="elasticsearch-playground-query-status" class="playground-editor-status">Ready</div>
+                                </div>
+                                <textarea id="elasticsearch-playground-query" name="query" rows="18" spellcheck="false">{
+    "query": {
+        "match_all": {}
+    },
+    "size": 10
+}</textarea>
+                            </div>
+                            <p class="playground-editor-help">Use <code>Tab</code> / <code>Shift+Tab</code> for indentation and <code>Ctrl+Shift+F</code> or <code>Cmd+Shift+F</code> to format.</p>
+                        </div>
+
+                        <div class="playground-actions">
+                            <button class="btn" type="button" data-playground-action="generate">Generate PHP</button>
+                            <button class="btn" type="button" data-playground-action="execute">Execute query</button>
+                            <button class="btn" type="button" data-playground-action="reset">Reset</button>
+                        </div>
+                    </form>
+
+                    <div id="elasticsearch-playground-error" class="empty hidden"></div>
+
+                    <div class="playground-output">
+                        <h2>PHP output</h2>
+                        <pre id="elasticsearch-playground-php">// Generated PHP code will appear here.</pre>
+                    </div>
+
+                    <div class="playground-output">
+                        <h2>Response</h2>
+                        <pre id="elasticsearch-playground-result">// Elasticsearch response will appear here after execution.</pre>
                     </div>
                 </div>
             </div>
@@ -389,6 +574,290 @@
                 target.appendChild(items[i]);
             }
         }
+
+        (function () {
+            "use strict";
+
+            var form = document.getElementById('elasticsearch-playground-form');
+            if (!form) {
+                return;
+            }
+
+            var phpOutput = document.getElementById('elasticsearch-playground-php');
+            var resultOutput = document.getElementById('elasticsearch-playground-result');
+            var errorBox = document.getElementById('elasticsearch-playground-error');
+            var queryInput = document.getElementById('elasticsearch-playground-query');
+            var queryStatus = document.getElementById('elasticsearch-playground-query-status');
+            var indexInput = document.getElementById('elasticsearch-playground-index');
+            var operationInput = form.querySelector('input[name="operation"]');
+            var defaultQuery = "{\n    \"query\": {\n        \"match_all\": {}\n    },\n    \"size\": 10\n}";
+            var defaultIndex = indexInput ? indexInput.value : '';
+            var allowedIndices = indexInput ? Array.prototype.map.call(indexInput.options, function (option) {
+                return option.value;
+            }) : [];
+            var endpoints = {
+                generate: '{{ path('elasticsearch_profiler_playground_generate') }}',
+                execute: '{{ path('elasticsearch_profiler_playground_execute') }}'
+            };
+
+            function setQueryStatus(message, type) {
+                if (!queryStatus) {
+                    return;
+                }
+
+                queryStatus.textContent = message;
+                queryStatus.classList.remove('is-valid', 'is-invalid');
+
+                if (type) {
+                    queryStatus.classList.add(type);
+                }
+            }
+
+            function setQueryValue(value) {
+                queryInput.value = value;
+                updateQueryStatus();
+            }
+
+            function getParsedQuery() {
+                var parsed = JSON.parse(queryInput.value);
+
+                if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+                    throw new Error('Top-level JSON value must be an object.');
+                }
+
+                return parsed;
+            }
+
+            function updateQueryStatus() {
+                if (!queryInput.value.trim()) {
+                    setQueryStatus('JSON body is empty.', 'is-invalid');
+                    return false;
+                }
+
+                try {
+                    getParsedQuery();
+                    setQueryStatus('Valid JSON object', 'is-valid');
+                    return true;
+                } catch (error) {
+                    setQueryStatus(error.message, 'is-invalid');
+                    return false;
+                }
+            }
+
+            function formatQuery(spaces) {
+                var parsed = getParsedQuery();
+                setQueryValue(JSON.stringify(parsed, null, spaces));
+            }
+
+            function indentSelection(textarea, shouldOutdent) {
+                var start = textarea.selectionStart;
+                var end = textarea.selectionEnd;
+                var value = textarea.value;
+                var hasSelection = start !== end;
+                var lineStart = value.lastIndexOf('\n', start - 1) + 1;
+                var lineEnd = hasSelection ? end : start;
+                var selectedText;
+                var updatedText;
+
+                if (!hasSelection && !shouldOutdent) {
+                    textarea.value = value.slice(0, start) + '    ' + value.slice(end);
+                    textarea.selectionStart = start + 4;
+                    textarea.selectionEnd = start + 4;
+                    return;
+                }
+
+                selectedText = value.slice(lineStart, lineEnd);
+
+                if (shouldOutdent) {
+                    updatedText = selectedText.replace(/^( {1,4}|\t)/gm, function (match) {
+                        return '';
+                    });
+                } else {
+                    updatedText = selectedText.replace(/^/gm, '    ');
+                }
+
+                textarea.value = value.slice(0, lineStart) + updatedText + value.slice(lineEnd);
+                textarea.selectionStart = lineStart;
+                textarea.selectionEnd = lineStart + updatedText.length;
+            }
+
+            function showError(message) {
+                errorBox.classList.remove('hidden');
+                errorBox.innerHTML = '<p>' + message + '</p>';
+            }
+
+            function clearError() {
+                errorBox.classList.add('hidden');
+                errorBox.innerHTML = '';
+            }
+
+            function switchToPlaygroundTab() {
+                var controls = document.querySelectorAll('.sf-tabs .tab-navigation .tab-control');
+
+                controls.forEach(function (control) {
+                    if (control.textContent.trim() === 'Playground') {
+                        control.click();
+                    }
+                });
+            }
+
+            function setBusy(isBusy) {
+                var buttons = form.querySelectorAll('button[data-playground-action]');
+                buttons.forEach(function (button) {
+                    button.disabled = isBusy;
+                });
+            }
+
+            function submitPlayground(action) {
+                if (action === 'reset') {
+                    clearError();
+                    setQueryValue(defaultQuery);
+                    if (indexInput) {
+                        indexInput.value = defaultIndex;
+                    }
+                    if (operationInput) {
+                        operationInput.value = 'search';
+                    }
+                    phpOutput.textContent = '// Generated PHP code will appear here.';
+                    resultOutput.textContent = '// Elasticsearch response will appear here after execution.';
+                    return;
+                }
+
+                clearError();
+                setBusy(true);
+
+                if (!updateQueryStatus()) {
+                    showError('JSON body is not valid.');
+                    queryInput.focus();
+                    setBusy(false);
+                    return;
+                }
+
+                var formData = new FormData(form);
+
+                fetch(endpoints[action], {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                    .then(function (response) {
+                        return response.json().then(function (data) {
+                            return { status: response.status, data: data };
+                        });
+                    })
+                    .then(function (payload) {
+                        if (payload.status >= 400) {
+                            throw new Error(payload.data.error || 'Playground request failed.');
+                        }
+
+                        if (action === 'generate') {
+                            phpOutput.textContent = payload.data.php || '// No PHP output.';
+                        }
+
+                        if (action === 'execute') {
+                            resultOutput.textContent = payload.data.result || '// Elasticsearch response will appear here after execution.';
+                        }
+                    })
+                    .catch(function (error) {
+                        showError(error.message);
+                    })
+                    .finally(function () {
+                        setBusy(false);
+                    });
+            }
+
+            function loadQueryIntoPlayground(button) {
+                var playgroundQuery = button.getAttribute('data-playground-query') || defaultQuery;
+                var playgroundIndex = button.getAttribute('data-playground-index') || '';
+                var playgroundOperation = button.getAttribute('data-playground-operation') || 'search';
+
+                clearError();
+                setQueryValue(playgroundQuery);
+                if (operationInput) {
+                    operationInput.value = playgroundOperation;
+                }
+                phpOutput.textContent = '// Generated PHP code will appear here.';
+                resultOutput.textContent = '// Elasticsearch response will appear here after execution.';
+
+                if (indexInput) {
+                    if (playgroundIndex && allowedIndices.indexOf(playgroundIndex) !== -1) {
+                        indexInput.value = playgroundIndex;
+                        switchToPlaygroundTab();
+                        submitPlayground('execute');
+                        return;
+                    }
+
+                    indexInput.value = defaultIndex;
+                }
+
+                switchToPlaygroundTab();
+                showError('Query was loaded into Playground. Execute was skipped because its index could not be resolved from the allowed profiler index list.');
+            }
+
+            form.querySelectorAll('button[data-playground-action]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    submitPlayground(button.getAttribute('data-playground-action'));
+                });
+            });
+
+            form.querySelectorAll('button[data-json-editor-action]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    clearError();
+
+                    try {
+                        switch (button.getAttribute('data-json-editor-action')) {
+                            case 'format':
+                                formatQuery(4);
+                                break;
+                            case 'minify':
+                                formatQuery(0);
+                                break;
+                            case 'validate':
+                                updateQueryStatus();
+                                break;
+                        }
+                    } catch (error) {
+                        setQueryStatus(error.message, 'is-invalid');
+                        showError(error.message);
+                        queryInput.focus();
+                    }
+                });
+            });
+
+            queryInput.addEventListener('input', function () {
+                updateQueryStatus();
+            });
+
+            queryInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Tab') {
+                    event.preventDefault();
+                    indentSelection(queryInput, event.shiftKey);
+                    updateQueryStatus();
+                    return;
+                }
+
+                if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key.toLowerCase() === 'f') {
+                    event.preventDefault();
+
+                    try {
+                        formatQuery(4);
+                    } catch (error) {
+                        setQueryStatus(error.message, 'is-invalid');
+                        showError(error.message);
+                    }
+                }
+            });
+
+            document.querySelectorAll('button[data-playground-load]').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    loadQueryIntoPlayground(button);
+                });
+            });
+
+            updateQueryStatus();
+        })();
 
         // ]]></script>
 
