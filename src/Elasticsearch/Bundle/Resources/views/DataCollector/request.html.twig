@@ -599,8 +599,8 @@
                 return option.value;
             }) : [];
             var endpoints = {
-                generate: '{{ path('elasticsearch_profiler_playground_generate') }}',
-                execute: '{{ path('elasticsearch_profiler_playground_execute') }}'
+                generate: {% if playground_enabled %}'{{ path('elasticsearch_profiler_playground_generate') }}'{% endif %},
+                execute: {% if playground_enabled %}'{{ path('elasticsearch_profiler_playground_execute') }}'{% endif %}
             };
 
             function setQueryStatus(message, type) {
