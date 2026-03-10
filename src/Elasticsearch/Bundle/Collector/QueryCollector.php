@@ -19,7 +19,7 @@ class QueryCollector extends AbstractDataCollector
 {
     private ?int $invalidEntityCount = null;
     private const string COMPATIBLE_VERSION = '8.0.0';
-    private const string NOT_COMPATIBLE_VERSION = '9.0.0';
+    private const string NOT_COMPATIBLE_VERSION = '9.4.0';
 
     public function __construct(
         private readonly DebugDataHolder $debugDataHolder,
@@ -32,13 +32,14 @@ class QueryCollector extends AbstractDataCollector
     public function collect(Request $request, Response $response, ?\Throwable $exception = null): void
     {
         $this->data = [
-            'queries'    => $this->debugDataHolder->getData(),
-            'entities'   => $this->provideEntitiesMapping(),
-            'kibana'     => $this->kibana,
-            'info'       => $this->connection->getServerInfo(),
+            'queries' => $this->debugDataHolder->getData(),
+            'entities' => $this->provideEntitiesMapping(),
+            'kibana' => $this->kibana,
+            'info' => $this->connection->getServerInfo(),
             'connection' => [
                 'default' => 'elasticsearch.connection',
             ],
+            'playground_indices' => $this->providePlaygroundIndices(),
         ];
     }
 
@@ -104,6 +105,14 @@ class QueryCollector extends AbstractDataCollector
         return $this->data['connection'];
     }
 
+    /**
+     * @return string[]
+     */
+    public function getPlaygroundIndices(): array
+    {
+        return $this->data['playground_indices'] ?? [];
+    }
+
     public function getInvalidEntityCount(): int
     {
         return $this->invalidEntityCount ??= count($this->data['entities']['invalid']);
@@ -154,5 +163,33 @@ class QueryCollector extends AbstractDataCollector
         }
 
         return $data;
+    }
+
+    /**
+     * @return string[]
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    private function providePlaygroundIndices(): array
+    {
+        $indices = [];
+        $prefix = $this->connection->getIndexPrefix();
+
+        foreach ($this->mappingMetadataProvider->getMappingMetadata()->getMetadata() as $index) {
+            if (!$index instanceof \Elasticsearch\Mapping\Index) {
+                continue;
+            }
+
+            $name = $index->getName();
+            if (null === $name || '' === $name) {
+                continue;
+            }
+
+            $indices[] = $prefix . $name;
+        }
+
+        $indices = array_values(array_unique($indices));
+        sort($indices);
+
+        return $indices;
     }
 }
