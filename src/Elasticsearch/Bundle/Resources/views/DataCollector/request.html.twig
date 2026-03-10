@@ -472,72 +472,75 @@
             </div>
         </div>
 
-        <div class="tab">
-            <h3 class="tab-title">Playground</h3>
-            <div class="tab-content">
-                <div class="playground-grid">
-                    <div class="help">
-                        <p>Read-only Elasticsearch playground available only in <code>dev</code>. Allowed body keys: <code>query</code>, <code>aggs</code>, <code>sort</code>, <code>from</code>, <code>size</code>, <code>_source</code>, <code>collapse</code>, <code>search_after</code>, <code>track_total_hits</code>, <code>min_score</code>, <code>post_filter</code>.</p>
-                        {% if collector.playgroundIndices is empty %}
-                            <p>No Elasticsearch indexes are available from registered mapping metadata.</p>
-                        {% endif %}
-                    </div>
-
-                    <form id="elasticsearch-playground-form" class="playground-form">
-                        <input type="hidden" name="_token" value="{{ csrf_token('elasticsearch_playground') }}">
-                        <input type="hidden" name="operation" value="search">
-
-                        <div>
-                            <label for="elasticsearch-playground-index">Index</label>
-                            <select id="elasticsearch-playground-index" name="index" {{ collector.playgroundIndices is empty ? 'disabled' }}>
-                                {% for index in collector.playgroundIndices %}
-                                    <option value="{{ index }}">{{ index }}</option>
-                                {% endfor %}
-                            </select>
+        {% set playground_enabled = elasticsearch_route_exists('elasticsearch_profiler_playground_generate') and elasticsearch_route_exists('elasticsearch_profiler_playground_execute') %}
+        {% if playground_enabled %}
+            <div class="tab">
+                <h3 class="tab-title">Playground</h3>
+                <div class="tab-content">
+                    <div class="playground-grid">
+                        <div class="help">
+                            <p>Read-only Elasticsearch playground available only in <code>dev</code>. Allowed body keys: <code>query</code>, <code>aggs</code>, <code>sort</code>, <code>from</code>, <code>size</code>, <code>_source</code>, <code>collapse</code>, <code>search_after</code>, <code>track_total_hits</code>, <code>min_score</code>, <code>post_filter</code>.</p>
+                            {% if collector.playgroundIndices is empty %}
+                                <p>No Elasticsearch indexes are available from registered mapping metadata.</p>
+                            {% endif %}
                         </div>
 
-                        <div>
-                            <label for="elasticsearch-playground-query">JSON query body</label>
-                            <div class="playground-editor">
-                                <div class="playground-editor-toolbar">
-                                    <div class="playground-editor-actions">
-                                        <button class="btn btn-sm" type="button" data-json-editor-action="format">Format JSON</button>
-                                        <button class="btn btn-sm" type="button" data-json-editor-action="minify">Minify</button>
-                                        <button class="btn btn-sm" type="button" data-json-editor-action="validate">Validate</button>
+                        <form id="elasticsearch-playground-form" class="playground-form">
+                            <input type="hidden" name="_token" value="{{ csrf_token('elasticsearch_playground') }}">
+                            <input type="hidden" name="operation" value="search">
+
+                            <div>
+                                <label for="elasticsearch-playground-index">Index</label>
+                                <select id="elasticsearch-playground-index" name="index" {{ collector.playgroundIndices is empty ? 'disabled' }}>
+                                    {% for index in collector.playgroundIndices %}
+                                        <option value="{{ index }}">{{ index }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="elasticsearch-playground-query">JSON query body</label>
+                                <div class="playground-editor">
+                                    <div class="playground-editor-toolbar">
+                                        <div class="playground-editor-actions">
+                                            <button class="btn btn-sm" type="button" data-json-editor-action="format">Format JSON</button>
+                                            <button class="btn btn-sm" type="button" data-json-editor-action="minify">Minify</button>
+                                            <button class="btn btn-sm" type="button" data-json-editor-action="validate">Validate</button>
+                                        </div>
+                                        <div id="elasticsearch-playground-query-status" class="playground-editor-status">Ready</div>
                                     </div>
-                                    <div id="elasticsearch-playground-query-status" class="playground-editor-status">Ready</div>
-                                </div>
-                                <textarea id="elasticsearch-playground-query" name="query" rows="18" spellcheck="false">{
+                                    <textarea id="elasticsearch-playground-query" name="query" rows="18" spellcheck="false">{
     "query": {
         "match_all": {}
     },
     "size": 10
 }</textarea>
+                                </div>
+                                <p class="playground-editor-help">Use <code>Tab</code> / <code>Shift+Tab</code> for indentation and <code>Ctrl+Shift+F</code> or <code>Cmd+Shift+F</code> to format.</p>
                             </div>
-                            <p class="playground-editor-help">Use <code>Tab</code> / <code>Shift+Tab</code> for indentation and <code>Ctrl+Shift+F</code> or <code>Cmd+Shift+F</code> to format.</p>
+
+                            <div class="playground-actions">
+                                <button class="btn" type="button" data-playground-action="generate">Generate PHP</button>
+                                <button class="btn" type="button" data-playground-action="execute">Execute query</button>
+                                <button class="btn" type="button" data-playground-action="reset">Reset</button>
+                            </div>
+                        </form>
+
+                        <div id="elasticsearch-playground-error" class="empty hidden"></div>
+
+                        <div class="playground-output">
+                            <h2>PHP output</h2>
+                            <pre id="elasticsearch-playground-php">// Generated PHP code will appear here.</pre>
                         </div>
 
-                        <div class="playground-actions">
-                            <button class="btn" type="button" data-playground-action="generate">Generate PHP</button>
-                            <button class="btn" type="button" data-playground-action="execute">Execute query</button>
-                            <button class="btn" type="button" data-playground-action="reset">Reset</button>
+                        <div class="playground-output">
+                            <h2>Response</h2>
+                            <pre id="elasticsearch-playground-result">// Elasticsearch response will appear here after execution.</pre>
                         </div>
-                    </form>
-
-                    <div id="elasticsearch-playground-error" class="empty hidden"></div>
-
-                    <div class="playground-output">
-                        <h2>PHP output</h2>
-                        <pre id="elasticsearch-playground-php">// Generated PHP code will appear here.</pre>
-                    </div>
-
-                    <div class="playground-output">
-                        <h2>Response</h2>
-                        <pre id="elasticsearch-playground-result">// Elasticsearch response will appear here after execution.</pre>
                     </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
 
     </div>
 

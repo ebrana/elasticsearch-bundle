@@ -46,6 +46,12 @@ elasticsearch:
                 password: ""
         
 ````
+#### Registrace Playground
+````yaml
+when@dev:
+    elasticsearch_profiler:
+        resource: '@ElasticsearchBundle/Resources/config/routing.php'
+````
 
 #### Registrace Document Builder Factories
 Pro registraci stačí dědit ``DocumentBuilderFactoryInterface`` a zaregistrovat jako service do kontejneru.

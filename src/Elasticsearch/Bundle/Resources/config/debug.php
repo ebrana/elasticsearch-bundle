@@ -8,6 +8,7 @@ use Elasticsearch\Bundle\Twig\ElasticsearchTwigExtension;
 use Elasticsearch\Debug\Connection as DebugConnection;
 use Elasticsearch\Debug\DebugDataHolder;
 use Elasticsearch\Tools\PhpQueryBuilder;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
@@ -28,6 +29,9 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('elasticsearch.twig.elasticsearch_extension', ElasticsearchTwigExtension::class)
         ->private()
+        ->args([
+            service(RouterInterface::class),
+        ])
         ->tag('twig.extension')
     ;
 
