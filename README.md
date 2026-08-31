@@ -106,5 +106,4 @@ class PostEventSample implements PostEventInterface
 
 Do profileru se zapisují volání `hasIndex`, `createIndex`, `deleteIndex`, `indexDocument`,
 `count` a `search`. Metody `bulk()`, `analyze()`, `openPointInTime()` a `closePointInTime()`
-z knihovny fungují normálně, ale v profileru se neobjeví — bulk a analyze se volají hlavně
-z CLI, kde profiler stejně není k dispozici.
+z knihovny fungují normálně, ale v profileru se neobjeví.
