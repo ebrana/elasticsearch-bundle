@@ -103,3 +103,7 @@ class PostEventSample implements PostEventInterface
 #### Profiler
 ![screen.png](screen.png)
 ![screen2.png](screen2.png)
+
+Do profileru se zapisují volání `hasIndex`, `createIndex`, `deleteIndex`, `indexDocument`,
+`count` a `search`. Metody `bulk()`, `analyze()`, `openPointInTime()` a `closePointInTime()`
+z knihovny fungují normálně, ale v profileru se neobjeví.
